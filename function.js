@@ -1,17 +1,17 @@
-window.function = function (img, legend,delimiter,dot_color,img_height,img_resized,fit, shortcuts, time) {
+window.function = function (img, legend, delimiter, dot_color, img_height, img_resized, fit, shortcuts, time) {
   
   // img
   img = img.value ?? "";
   if (img == "") return;
   let imgs = img.split(",");
-   for (var i = 0; i < imgs.length; i++) {
-     imgs[i] = imgs[i].trim()
- }
+  for (var i = 0; i < imgs.length; i++) {
+    imgs[i] = imgs[i].trim();
+  }
 
   delimiter = delimiter.value ?? "||";
   dot_color = dot_color.value ?? "#717171";
-  img_height = img_height.value ?? "750";
-  img_resized = img_resized.value ?? "375";
+  img_height = img_height.value ?? "auto"; // Set to auto for responsive height
+  img_resized = img_resized.value ?? "auto"; // Set to auto for responsive height
 
   // legend
   legend = legend.value ?? "";
@@ -69,8 +69,7 @@ window.function = function (img, legend,delimiter,dot_color,img_height,img_resiz
       }
     }
 
-    htmlImg += `<span class="slide"><img src="${imgs[i]}" alt="" class="myImg"/>${caption}</li></span>
-   `;
+    htmlImg += `<span class="slide"><img src="${imgs[i]}" alt="" class="myImg"/>${caption}</span>`;
 
     if (dotEnable)
       htmldot += `<span class="dot" onclick="showSlides(${i})"></span>`;
@@ -82,158 +81,88 @@ window.function = function (img, legend,delimiter,dot_color,img_height,img_resiz
   let ht = `<!DOCTYPE html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://unpkg.com/@panzoom/panzoom@4.4.1/dist/panzoom.min.js"></script>
-</head>
-<html>
   <style>
     .slider {
+      position: relative;
+      overflow: hidden;
+      height: auto; /* Allow height to adjust based on content */
     }
 
     .wrapper {
-      overflow: hidden;
-      position: relative;
-      z-index: 1;
       width: 100%;
-      height: 100vh;
-      border-radius: 0px;
+      height: auto; /* Allow height to adjust based on content */
     }
 
-    #items {
-      width: 10000px;
+    .items {
+      display: flex;
+      transition: left 0.5s ease-out;
       position: relative;
-      top: 0;
-      left: -100vw;
-    }
-
-    #items.shifting {
-      transition: left 0.7s ease-out;
+      left: -100%;
     }
 
     .slide {
-      width: 100vw;
-      height: 100vh;
-      cursor: pointer;
-      float: left;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      transition: all 1s;
-      position: relative;
+      flex: 0 0 100%; /* Each slide takes full width */
+      height: auto; /* Allow height to adjust based on content */
     }
 
-    .slide img {
-      height: ${img_resized}px;
-      object-fit: ${objectFit};
+    .myImg {
+      width: 100%;
+      height: auto; /* Responsive height */
+      object-fit: ${objectFit}; /* Use the 'fit' variable */
     }
 
     .control {
+      cursor: pointer;
       position: absolute;
       top: 50%;
-      border-radius: 20px;
-      margin-top: -20px;
-      box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.3);
-      z-index: 2;
+      transform: translateY(-50%);
+      font-size: 30px;
+      color: white;
+      z-index: 10;
     }
 
     .prev {
-      left: -20px;
+      left: 10px;
     }
 
     .next {
-      right: -20px;
+      right: 10px;
     }
 
-    .prev,
-    .next {
-      cursor: pointer;
-      position: absolute;
-      top: 50%;
-      width: auto;
-      padding: 16px;
-      color: white;
-      font-weight: bold;
-      font-size: 18px;
-      transition: 0.6s ease;
-      border-radius: 20px;
-      user-select: none;
-      background-color: rgba(0, 0, 0, 0.8);
-      box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.3);
-      z-index: 2;
-    }
-
-    /* On hover, add a black background color with a little bit see-through */
-    .prev:hover,
-    .next:hover {
-      background-color: rgba(0, 0, 0, 0.8);
-    }
-
-    /* Caption text */
-    .text {
-      color: #f2f2f2;
-      font-size: 18px;
-      position: absolute;
-      top: 100%;
-      margin-top: -73px;
-      padding: 8px 0px;
-      width: calc(100vw - 15px);
-      text-align: center;
-      background-color: rgba(0, 0, 0, 0.6);
-    }
-
-    .dotAll {
-      position: absolute;
-      width: 100%;
-      top: 100%;
-      margin-top: -35px;
-      z-index: 3;
-    }
-
-    /* The dots/bullets/indicators */
     .dot {
-      cursor: pointer;
-      height: 15px;
-      width: 15px;
-      margin: 10px 2px;
-      border-radius: 50%;
       display: inline-block;
-      transition: background-color 0.6s ease;
-      background-color: #808080;
-    }
-
-    .dotActive,
-    .dot:hover {
+      width: 10px;
+      height: 10px;
       background-color: ${dot_color};
+      border-radius: 50%;
+      margin: 5px;
+      cursor: pointer;
     }
 
-    /* On smaller screens, decrease text size */
-    @media only screen and (max-width: 300px) {
-      .prev,
-      .next,
-      .text {
-        font-size: 11px;
-      }
+    .dotActive {
+      background-color: #717171; /* Active dot color */
     }
 
     .thumbnail {
-      position: absolute;
-      top: 2px;
-      left: 8px;
-      margin-top: 8px;
-      opacity: 1;
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
     }
 
-    .thumbnail img {
-      width: 10%;
-      border-radius: 5px;
+    .thumbnailImg {
+      width: 50px;
+      height: auto; /* Responsive height */
+      margin: 0 5px;
       cursor: pointer;
     }
 
     .thumbnailsActive {
-      opacity: 0.3;
-      box-shadow: inset 0 0 1em gold, 0 0 1em black;
+      border: 2px solid #717171; /* Active thumbnail border */
     }
   </style>
-
+  <script src="https://unpkg.com/@panzoom/panzoom@4.4.1/dist/panzoom.min.js"></script>
+</head>
+<html>
   <body>
     <div id="slider" class="slider">
       <div class="wrapper">
@@ -287,7 +216,6 @@ window.function = function (img, legend,delimiter,dot_color,img_height,img_resiz
       items.insertBefore(cloneLast, firstSlide);
       wrapper.classList.add("loaded");
 
-
       // Click events
       prev.addEventListener("click", function () {
         shiftSlide(-1);
@@ -310,19 +238,13 @@ window.function = function (img, legend,delimiter,dot_color,img_height,img_resiz
       let auto = setTimeout(slideauto, ${time});
 
       function slideauto() {
-
-        if (${time} == 0)
-        {
+        if (${time} == 0) {
           clearTimeout(auto);
-        }
-        else
-        {
+        } else {
           shiftSlide(1);
           auto = setTimeout(slideauto, ${time});
         }
       }
-      
-
 
       // Show 
       function showSlides(n) {
@@ -353,9 +275,7 @@ window.function = function (img, legend,delimiter,dot_color,img_height,img_resiz
       }
 
       function checkIndex() {
-
         clearTimeout(auto);
-
         items.classList.remove("shifting");
 
         if (index < 0) {
@@ -368,16 +288,14 @@ window.function = function (img, legend,delimiter,dot_color,img_height,img_resiz
           index = 0;
         }
 
-        if (dots.length > 0)
-        {
+        if (dots.length > 0) {
           for (let i = 0; i < dots.length; i++) {
             dots[i].className = dots[i].className.replace(" dotActive", "");
           }
           dots[index].className += " dotActive";
         }
 
-        if (thumbnails.length > 0)
-        {
+        if (thumbnails.length > 0) {
           for (let i = 0; i < thumbnails.length; i++) {
             thumbnails[i].className = thumbnails[i].className.replace(" thumbnailsActive", "");
           }
@@ -386,17 +304,15 @@ window.function = function (img, legend,delimiter,dot_color,img_height,img_resiz
         allowShift = true;
 
         auto = setTimeout(slideauto, ${time});
-        
       }
  
-    window.onload = function () {
-  
-      let allimg = document.querySelectorAll(".myImg")
-      allimg.forEach((item, index) => {
-      const panzoom = Panzoom(item, { maxScale: 5 });
-      item.parentElement.addEventListener('wheel', panzoom.zoomWithWheel)
-      });
-    }
+      window.onload = function () {
+        let allimg = document.querySelectorAll(".myImg");
+        allimg.forEach((item, index) => {
+          const panzoom = Panzoom(item, { maxScale: 5 });
+          item.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+        });
+      }
     </script>
   </body>
 </html>`;
